@@ -2,7 +2,7 @@
 
 - **Status:** Zaproponowana
 - **Data:** 2026-11-02
-- **Powiązane:** ADR-0002 (stos technologiczny), ADR-0004 (refresh tokeny, do napisania), ADR o kliencie przeglądarkowym (po MVP)
+- **Powiązane:** ADR-0002 (stos technologiczny), ADR o refresh tokenach (do napisania), ADR o kliencie przeglądarkowym (po MVP)
 
 ## Kontekst
 
@@ -26,7 +26,7 @@ Wybieramy **opcję 1**.
 - Po zalogowaniu (`POST /api/auth/login`) API zwraca access token (JWT, ważny krótko) i refresh token.
 - Aplikacja mobilna trzyma oba tokeny w bezpiecznym magazynie telefonu i wysyła access token w nagłówku `Authorization: Bearer <token>` przy każdym żądaniu.
 - API weryfikuje podpis i ważność tokenu bez zapytania do bazy.
-- Szczegóły refresh tokenów (czas życia, rotacja, przechowywanie, unieważnianie) opisze osobny **ADR-0004**.
+- Szczegóły refresh tokenów (czas życia, rotacja, przechowywanie, unieważnianie) opisze osobny ADR.
 - Gdy dojdzie klient przeglądarkowy, przed tym samym API stanie **BFF** (Backend-For-Frontend): trzyma tokeny po stronie serwera, a przeglądarce daje tylko ciasteczko `HttpOnly`. Opisze to osobny ADR. API biznesowe się nie zmieni.
 
 **Dlaczego nie opcja 2:** ciasteczka to mechanizm przeglądarki. W aplikacji mobilnej trzeba je obsługiwać ręcznie i nic nie zyskujemy. Do tego dochodzi ochrona przed CSRF, której przy nagłówku nie potrzeba.
@@ -42,6 +42,6 @@ Wybieramy **opcję 1**.
 - Zespół zna ten mechanizm, więc wdrożenie jest szybsze.
 
 **Trudniejsze:**
-- Wylogowanie i zablokowanie konta nie działają natychmiast: wydany access token jest ważny do końca swojego czasu życia. Dlatego musi żyć krótko, a to wymusza refresh tokeny (ADR-0004).
+- Wylogowanie i zablokowanie konta nie działają natychmiast: wydany access token jest ważny do końca swojego czasu życia. Dlatego musi żyć krótko, a to wymusza refresh tokeny (osobny ADR).
 - Trzeba obsłużyć wygasanie tokenu w aplikacji mobilnej (odświeżenie i ponowienie żądania).
 - Wersja przeglądarkowa będzie wymagała dodatkowego komponentu (BFF), czyli więcej do wdrożenia i utrzymania.
