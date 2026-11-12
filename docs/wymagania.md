@@ -1,9 +1,9 @@
 # Wymagania MVP: aplikacja dla trenera personalnego
 
-- **Wersja:** 0.2 (szkic)
-- **Data:** 2026-11-07
+- **Wersja:** 0.3 (szkic)
+- **Data:** 2026-11-12
 - **Status:** Szkic roboczy. Otwarte pytania rozstrzygnięte założeniami zespołu, bez konsultacji z klientem
-- **Powiązane:** makiety ekranów (`docs/mockups/`), decyzje architektoniczne (`docs/adr/`)
+- **Powiązane:** makiety ekranów (`docs/mockups/`), [model domeny](model-domeny.md) (v0.2), [kontrakt API](api.md) (v0.2), decyzje architektoniczne (`docs/adr/`)
 
 ## 1. Cel produktu
 
@@ -83,11 +83,12 @@ Jako użytkownik chcę się wylogować, żeby nikt inny na moim telefonie nie mi
 #### W-04 Lista podopiecznych *(ekran 2)*
 Jako trener chcę widzieć listę swoich podopiecznych ze statusem, żeby szybko zauważyć, kto wymaga uwagi.
 
+- Lista obejmuje podopiecznych z aktywnym kontem. Zaproszeni, którzy nie ustawili jeszcze hasła, są na liście oczekujących zaproszeń (W-06).
 - Lista pokazuje imię, informację o planie i status każdego podopiecznego.
 - Statusy:
   - **W planie:** ma aktywny plan i trenuje regularnie,
   - **Brak treningu:** ma aktywny plan, ale nie zapisał treningu od co najmniej 7 dni,
-  - **Koniec planu:** aktywny plan kończy się w ciągu 3 dni,
+  - **Koniec planu:** aktywny plan kończy się w ciągu 3 dni albo jego planowana data końca już minęła (plan nie wygasa sam, kończy go dopiero nowy plan),
   - **Bez planu:** nie ma aktywnego planu.
 - Filtry: **Aktywni** (domyślny), **Wymaga uwagi** (statusy „Brak treningu” i „Koniec planu”), **Zarchiwizowani**. Przy filtrze widać liczbę podopiecznych.
 - Wyszukiwanie po imieniu, nazwisku lub e-mailu, bez rozróżniania wielkości liter.
@@ -106,13 +107,13 @@ Jako trener chcę zobaczyć w jednym miejscu plan, postępy i ostatnie treningi 
 #### W-06 Zaproszenie podopiecznego *(ekran 6)*
 Jako trener chcę zaprosić podopiecznego mailem, żeby sam założył sobie konto.
 
-- Formularz: imię i nazwisko (wymagane), e-mail (wymagany), cel (opcjonalny: redukcja, masa, siła, zdrowie/sprawność).
+- Formularz: imię (wymagane), nazwisko (wymagane), e-mail (wymagany), cel (opcjonalny: redukcja, masa, siła, zdrowie/sprawność).
 - Po wysłaniu podopieczny dostaje e-mail z linkiem do ustawienia hasła.
 - Link jest jednorazowy i ważny 7 dni.
 - Lista **oczekujących zaproszeń** pokazuje datę wysłania i czas do wygaśnięcia.
 - **Wyślij ponownie** generuje nowy link, a poprzedni przestaje działać.
-- E-mail należący już do podopiecznego → błąd z czytelnym komunikatem.
-- Po ustawieniu hasła konto podopiecznego jest aktywne, a zaproszenie znika z listy oczekujących.
+- E-mail należący już do podopiecznego (aktywnego, zarchiwizowanego lub zaproszonego) albo do konta trenera → błąd z czytelnym komunikatem.
+- Po ustawieniu hasła konto podopiecznego jest aktywne, a zaproszenie znika z listy oczekujących. Dzień aktywacji konta jest datą rozpoczęcia współpracy.
 
 #### W-07 Archiwizacja podopiecznego
 Jako trener chcę zarchiwizować podopiecznego, który zakończył współpracę, żeby nie zaśmiecał listy, ale żeby jego historia została.
@@ -120,6 +121,7 @@ Jako trener chcę zarchiwizować podopiecznego, który zakończył współpracę
 - Zarchiwizowany podopieczny nie może się zalogować.
 - Widać go tylko w filtrze **Zarchiwizowani**, z pełną historią.
 - Trener może przywrócić podopiecznego z archiwum.
+- Archiwizować można tylko podopiecznego z aktywnym kontem. Trwale usunąć dane (N-08) można podopiecznego zarchiwizowanego albo zaproszonego, który nie aktywował konta.
 
 ### 5.3 Biblioteka ćwiczeń (trener)
 
@@ -136,9 +138,9 @@ Jako trener chcę szybko znaleźć ćwiczenie, żeby dodać je do planu.
 Jako trener chcę dodać własne ćwiczenie, żeby używać w planach ruchów, których nie ma w bibliotece.
 
 - Wymagane: nazwa i partia mięśniowa. Opcjonalne: sprzęt, link do filmu, opis.
-- Nazwa własnego ćwiczenia jest unikalna w obrębie biblioteki trenera.
+- Nazwa własnego ćwiczenia jest unikalna wśród wszystkich ćwiczeń widocznych w bibliotece (wspólnych i własnych), bez rozróżniania wielkości liter.
 - Trener może edytować tylko własne ćwiczenia. Ćwiczeń wspólnych nie może zmieniać.
-- Ćwiczenia użytego w jakimkolwiek planie nie można usunąć, tylko ukryć z biblioteki. Istniejące plany i historia pozostają bez zmian.
+- Ćwiczenia użytego w jakimkolwiek planie, treningu lub rekordzie nie można usunąć, tylko ukryć z biblioteki. Istniejące plany i historia pozostają bez zmian.
 
 ### 5.4 Plany treningowe (trener)
 
@@ -147,11 +149,13 @@ Jako trener chcę ułożyć plan z dni treningowych, ćwiczeń i serii, żeby po
 
 - Plan ma: nazwę, przypisanego podopiecznego i liczbę tygodni (1–52).
 - Plan składa się z 1–7 dni treningowych w ustalonej kolejności. Każdy dzień ma nazwę.
+- Dzień treningowy może mieć opcjonalny szacowany czas trwania w minutach (10–240), pokazywany podopiecznemu na ekranie „Dziś”.
 - Trener może podać sugerowane dni tygodnia dla planu (np. pon/śr/pt). Są one tylko wskazówką i nie blokują treningu w inny dzień.
-- Dzień treningowy zawiera ćwiczenia z biblioteki w ustalonej kolejności.
+- Dzień treningowy zawiera 1–20 ćwiczeń z biblioteki w ustalonej kolejności.
 - Każde ćwiczenie ma 1–10 serii planowanych. Seria to liczba powtórzeń **albo** czas w sekundach, opcjonalnie ciężar i RIR, oraz przerwa po serii.
-- Plan nie zapisze się bez nazwy, podopiecznego i co najmniej jednego dnia z co najmniej jednym ćwiczeniem. Błędy są pokazane przy właściwych polach.
-- Podopieczny ma najwyżej jeden aktywny plan. Aktywowanie nowego planu kończy poprzedni.
+- Plan nie zapisze się bez nazwy, podopiecznego i co najmniej jednego dnia, a każdy dzień musi mieć co najmniej jedno ćwiczenie. Błędy są pokazane przy właściwych polach.
+- Plan można przypisać tylko podopiecznemu z aktywnym kontem.
+- Zapisany plan od razu staje się aktywny, a dzień zapisania jest jego datą rozpoczęcia. Podopieczny ma najwyżej jeden aktywny plan: aktywowanie nowego planu kończy poprzedni.
 
 #### W-11 Edycja planu w trakcie
 Jako trener chcę zmienić plan w trakcie jego trwania, żeby dopasować go do postępów podopiecznego.
@@ -165,7 +169,7 @@ Jako trener chcę zmienić plan w trakcie jego trwania, żeby dopasować go do p
 Jako podopieczny chcę po otwarciu aplikacji zobaczyć, jaki trening mam zrobić jako następny, żeby nie szukać planu w SMS-ach.
 
 - Ekran pokazuje dzisiejszą datę i pasek bieżącego tygodnia. Na pasku widać dni z wykonanym treningiem, dzień dzisiejszy oraz sugerowane dni tygodnia z planu.
-- Jeśli podopieczny ma aktywny plan, ekran pokazuje **następny trening** z kolejki: nazwę dnia, listę ćwiczeń z seriami i powtórzeniami oraz przycisk **Zacznij trening**.
+- Jeśli podopieczny ma aktywny plan, ekran pokazuje **następny trening** z kolejki: nazwę dnia, szacowany czas trwania (jeśli trener go podał), listę ćwiczeń z seriami i powtórzeniami oraz przycisk **Zacznij trening**.
 - Następny trening można zacząć w dowolny dzień, także poza sugerowanymi dniami tygodnia.
 - Jeśli podopieczny wykonał już dziś trening, ekran to pokazuje, a następny trening z kolejki pozostaje dostępny.
 - Jeśli podopieczny nie ma aktywnego planu: informacja, że trener jeszcze go nie przypisał.
@@ -182,13 +186,15 @@ Jako podopieczny chcę zapisywać wykonane serie w trakcie treningu, żeby trene
 - **Przerwij** pozwala zapisać trening jako częściowo wykonany albo go odrzucić.
 - Zapisany trening (pełny lub częściowy) przesuwa kolejkę: następnym treningiem staje się kolejny dzień planu. Odrzucony trening kolejki nie przesuwa.
 - Krótkie zerwanie połączenia w trakcie treningu nie powoduje utraty wpisanych danych.
+- Zamknięcie aplikacji lub jej awaria w trakcie treningu nie powoduje utraty wpisanych danych.
+- Ponowne wysłanie tego samego treningu (np. po zerwaniu połączenia w chwili zapisu) nie tworzy drugiego treningu.
 
 ### 5.6 Postępy (podopieczny i trener)
 
 #### W-14 Pomiary *(ekran 9, „Dodaj pomiar”)*
 Jako podopieczny chcę zapisywać wagę i obwody, żeby widzieć zmiany sylwetki.
 
-- Pomiar ma datę (domyślnie dzisiejszą), wagę w kg i opcjonalne obwody w cm: pas, biodra, klatka, ramię, udo.
+- Pomiar ma datę (domyślnie dzisiejszą, nie z przyszłości), wagę w kg i opcjonalne obwody w cm: pas, biodra, klatka, ramię, udo.
 - Waga musi mieścić się w zakresie 30–300 kg, a obwody w 10–250 cm. Wartości spoza zakresu są odrzucane z komunikatem.
 - Jednego dnia może być najwyżej jeden pomiar. Ponowny zapis tego samego dnia nadpisuje poprzedni.
 
@@ -209,10 +215,10 @@ Jako podopieczny chcę zobaczyć wykres wagi i swoje rekordy, żeby widzieć, ż
 |---|---|---|
 | Lista i profile podopiecznych | swoich podopiecznych | — |
 | Notatka trenera | odczyt i zapis | brak dostępu |
-| Plany | tworzenie i edycja dla swoich podopiecznych | odczyt **własnego** aktywnego planu |
-| Treningi | odczyt treningów swoich podopiecznych | zapis i odczyt **własnych** |
+| Plany | tworzenie i edycja dla swoich podopiecznych | odczyt następnego treningu z **własnego** aktywnego planu (nazwa planu, bieżący tydzień, następny dzień treningowy) |
+| Treningi | odczyt treningów swoich podopiecznych | zapis **własnych**; odczyt tylko w zakresie ekranów „Dziś” i „Trening w trakcie” (pełna historia poza MVP) |
 | Pomiary i rekordy | odczyt u swoich podopiecznych | zapis, odczyt i usuwanie **własnych** |
-| Biblioteka ćwiczeń | wspólne: odczyt; własne: pełna edycja | odczyt ćwiczeń z własnych planów |
+| Biblioteka ćwiczeń | wspólne: odczyt; własne: pełna edycja | odczyt ćwiczeń ze wszystkich **własnych** planów (aktywnego i zakończonych) |
 
 **Każda próba dostępu do cudzych danych** (np. podopieczny A pobiera trening podopiecznego B przez API) **kończy się odmową**, a odpowiedź nie zdradza, czy te dane istnieją.
 
@@ -266,3 +272,4 @@ Jako podopieczny chcę zobaczyć wykres wagi i swoje rekordy, żeby widzieć, ż
 |---|---|---|
 | 0.1 | 2026-11-02 | Pierwszy szkic |
 | 0.2 | 2026-11-07 | Rozstrzygnięte P-04 i P-05: kolejka dni treningowych z sugerowanymi dniami tygodnia (W-10, W-12, W-13, słownik), rekord osobisty jako ręcznie wpisywane 1RM (W-15, reguły dostępu). Pozostałe pytania oznaczone jako założenia |
+| 0.3 | 2026-11-12 | Doprecyzowania z kontraktu API: lista podopiecznych tylko z aktywnym kontem i „Koniec planu” także po planowanej dacie końca (W-04); imię i nazwisko jako dwa pola, zajęty e-mail (W-06); warunki archiwizacji i trwałego usunięcia (W-07); unikalność nazwy ćwiczenia wśród wszystkich widocznych (W-09); szacowany czas dnia, 1–20 ćwiczeń w dniu, aktywacja planu przy zapisie (W-10, W-12); ochrona przed utratą i podwójnym zapisem treningu (W-13); data pomiaru nie z przyszłości (W-14); reguły dostępu podopiecznego do planów, treningów i ćwiczeń (sekcja 6) |
