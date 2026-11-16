@@ -7,14 +7,16 @@ Rejestr istotnych decyzji architektonicznych projektu. Format i zasady: [ADR-000
 | Nr | Tytuł | Status |
 |---|---|---|
 | 0001 | [Zapisywanie decyzji architektonicznych](0001-zapisywanie-decyzji-architektonicznych.md) | Zaakceptowana |
-| 0002 | [Stos technologiczny i styl architektury backendu](0002-stos-technologiczny-i-styl-architektury.md) | Zaproponowana |
-| 0003 | [Uwierzytelnianie klienta mobilnego](0003-uwierzytelnianie-klienta-mobilnego.md) | Zaproponowana |
+| 0002 | [Stos technologiczny i styl architektury backendu](0002-stos-technologiczny-i-styl-architektury.md) | Zaakceptowana |
+| 0003 | [Uwierzytelnianie klienta mobilnego](0003-uwierzytelnianie-klienta-mobilnego.md) | Zaakceptowana |
+| 0004 | [Refresh tokeny: czas życia, rotacja i unieważnianie](0004-refresh-tokeny.md) | Zaakceptowana |
 
 ## Konwencje
 
 - **Kiedy pisać ADR:** gdy decyzja wpływa na strukturę systemu, cechy niefunkcjonalne (bezpieczeństwo, wydajność, dostępność), zależności, interfejsy (API) albo sposób budowy i wdrażania. ADR powstaje w momencie podejmowania decyzji, a nie z wyprzedzeniem.
 - **Nazwa pliku:** `NNNN-tytul-malymi-literami.md`, numery kolejne z zerami na początku.
 - **Statusy:** Zaproponowana → Zaakceptowana albo Odrzucona; później ewentualnie Wycofana albo Zastąpiona przez ADR-NNNN.
+- **Akceptacja:** ADR trafia do repo przez Pull Request. Recenzja PR to dyskusja nad propozycją, a scalenie oznacza akceptację, więc ADR w gałęzi `main` ma status „Zaakceptowana” (albo „Odrzucona”, jeśli zapisujemy odrzuconą propozycję).
 - **Niezmienność:** zaakceptowanego ADR-a nie edytujemy (poza literówkami i linkami). Zmiana decyzji oznacza nowy ADR, a stary dostaje status „Zastąpiona przez ADR-NNNN”.
 
 ## Szablon

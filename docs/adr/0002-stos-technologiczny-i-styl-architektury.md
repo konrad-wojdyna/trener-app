@@ -1,6 +1,6 @@
 # 2. Stos technologiczny i styl architektury backendu
 
-- **Status:** Zaproponowana
+- **Status:** Zaakceptowana
 - **Data:** 2026-11-02
 
 ## Kontekst
