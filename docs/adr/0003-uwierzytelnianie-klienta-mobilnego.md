@@ -1,8 +1,8 @@
 # 3. Uwierzytelnianie klienta mobilnego: JWT w nagłówku Authorization
 
-- **Status:** Zaproponowana
+- **Status:** Zaakceptowana
 - **Data:** 2026-11-02
-- **Powiązane:** ADR-0002 (stos technologiczny), ADR o refresh tokenach (do napisania), ADR o kliencie przeglądarkowym (po MVP)
+- **Powiązane:** ADR-0002 (stos technologiczny), [ADR-0004](0004-refresh-tokeny.md) (refresh tokeny), ADR o kliencie przeglądarkowym (po MVP)
 
 ## Kontekst
 
